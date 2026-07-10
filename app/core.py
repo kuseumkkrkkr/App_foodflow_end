@@ -16,9 +16,16 @@ from urllib.parse import quote
 from xml.sax.saxutils import escape
 
 from flask import Flask, Response, abort, jsonify, request, send_file, send_from_directory
-from flask_cors import CORS
+try:
+    from flask_cors import CORS
+except ModuleNotFoundError:
+    def CORS(app: Flask, *args: Any, **kwargs: Any) -> Flask:
+        return app
 from pydantic import BaseModel, Field
-from PyPDF2 import PdfReader
+try:
+    from PyPDF2 import PdfReader
+except ModuleNotFoundError:
+    PdfReader = None
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
@@ -4449,6 +4456,8 @@ def load_request_board_pdf_or_400(db: Session, req: ProductRequest) -> Generated
 
 
 def extract_pdf_text(storage_path: str) -> str:
+    if PdfReader is None:
+        return ""
     try:
         reader = PdfReader(storage_path)
     except Exception:
